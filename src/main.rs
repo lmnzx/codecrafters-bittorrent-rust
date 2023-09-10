@@ -1,11 +1,6 @@
 use serde_bencode::{from_str, value::Value};
 use std::env;
 
-/*
-"{\"foo\":\"pineapple\",\"hello\":52}\n"
-"{\"foo\": \"pineapple\",\"hello\": 52}\n"
-*/
-
 fn format(v: &Value) -> String {
     return match v {
         Value::Bytes(b) => format!("{:?}", String::from_utf8(b.clone()).unwrap()),
@@ -18,13 +13,13 @@ fn format(v: &Value) -> String {
                 .join(", ")
         ),
         Value::Dict(d) => {
-            let mut r = Vec::<String>::new();
-            for (k, v) in d {
-                let key = String::from_utf8_lossy(k).to_string();
-                r.push(format!("\"{}\":{}", key, format(v)));
+            let mut result = Vec::<String>::new();
+            for (key, value) in d {
+                let key_str = String::from_utf8_lossy(key).to_string();
+                result.push(format!("\"{}\":{}", key_str, format(value)));
             }
-            r.sort();
-            format!("{{{}}}", r.join(","))
+            result.sort();
+            format!("{{{}}}", result.join(","))
         }
     };
 }
