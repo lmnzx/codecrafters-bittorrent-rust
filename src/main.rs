@@ -3,7 +3,7 @@ use std::env;
 
 fn format(v: &Value) -> String {
     return match v {
-        Value::Bytes(b) => String::from_utf8_lossy(b).to_string(),
+        Value::Bytes(b) => String::from_utf8(b.clone()).unwrap(),
         Value::Int(i) => i.to_string(),
         Value::List(l) => format!(
             "[{}]",
