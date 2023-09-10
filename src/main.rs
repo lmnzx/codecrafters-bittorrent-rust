@@ -1,10 +1,9 @@
 use serde_bencode::{from_str, value::Value};
-use serde_json;
 use std::env;
 
 fn format(v: &Value) -> String {
     return match v {
-        Value::Bytes(b) => String::from_utf8(b.clone()).unwrap(),
+        Value::Bytes(b) => format!("{}", String::from_utf8(b.clone()).unwrap()),
         Value::Int(i) => format!("{}", i.to_string()),
         Value::List(l) => format!(
             "[{}]",
