@@ -1,6 +1,11 @@
 use serde_bencode::{from_str, value::Value};
 use std::env;
 
+/*
+"{\"foo\":\"pineapple\",\"hello\":52}\n"
+"{\"foo\": \"pineapple\",\"hello\": 52}\n"
+*/
+
 fn format(v: &Value) -> String {
     return match v {
         Value::Bytes(b) => format!("{:?}", String::from_utf8(b.clone()).unwrap()),
@@ -16,7 +21,7 @@ fn format(v: &Value) -> String {
             let mut r = Vec::<String>::new();
             for (k, v) in d {
                 let key = String::from_utf8_lossy(k).to_string();
-                r.push(format!("\"{}\": {}", key, format(v)));
+                r.push(format!("\"{}\":{}", key, format(v)));
             }
             r.sort();
             format!("{{{}}}", r.join(","))
