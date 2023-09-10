@@ -12,7 +12,15 @@ fn format(v: &Value) -> String {
                 .collect::<Vec<String>>()
                 .join(", ")
         ),
-        _ => panic!("unsupported type"),
+        Value::Dict(d) => {
+            let mut r = Vec::<String>::new();
+            for (k, v) in d {
+                let key = String::from_utf8_lossy(k).to_string();
+                r.push(format!("\"{}\": {}", key, format(v)));
+            }
+            r.sort();
+            format!("{{{}}}", r.join(","))
+        }
     };
 }
 
