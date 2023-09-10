@@ -1,5 +1,4 @@
 use serde_bencode::{from_str, value::Value};
-use serde_json;
 use std::env;
 
 fn format(v: &Value) -> String {
@@ -24,7 +23,7 @@ fn main() {
     if command == "decode" {
         let encoded_value = &args[2];
         let decoded_value = from_str::<Value>(encoded_value).unwrap();
-        println!("{}", serde_json::Value::String(format(&decoded_value)));
+        println!("{}", format(&decoded_value));
     } else {
         println!("unknown command: {}", args[1])
     }
