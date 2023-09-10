@@ -1,20 +1,22 @@
-use serde_bencode::{from_str, value::Value};
+use serde_bencode::{self, value::Value};
 use std::env;
 
-fn format(v: &Value) -> String {
-    return match v {
-        Value::Bytes(b) => format!("{:?}", String::from_utf8(b.clone()).unwrap()),
+fn decode(encoded_value: &str) -> Value {
+    return serde_bencode::from_str::<Value>(encoded_value).unwrap();
+}
+
+fn format(value: &Value) -> String {
+    return match value {
+        Value::Bytes(bytes) => format!("{:?}", std::str::from_utf8(bytes).unwrap()),
         Value::Int(i) => i.to_string(),
-        Value::List(l) => format!(
+        Value::List(list) => format!(
             "[{}]",
-            l.iter()
-                .map(|v| format(v))
-                .collect::<Vec<String>>()
-                .join(", ")
+            list.iter().map(format).collect::<Vec<String>>().join(",")
         ),
-        Value::Dict(d) => {
+
+        Value::Dict(dict) => {
             let mut result = Vec::<String>::new();
-            for (key, value) in d {
+            for (key, value) in dict {
                 let key_str = String::from_utf8_lossy(key).to_string();
                 result.push(format!("\"{}\":{}", key_str, format(value)));
             }
@@ -23,14 +25,14 @@ fn format(v: &Value) -> String {
         }
     };
 }
-
 fn main() {
     let args: Vec<String> = env::args().collect();
     let command = &args[1];
-
     if command == "decode" {
         let encoded_value = &args[2];
-        let decoded_value = from_str::<Value>(encoded_value).unwrap();
+
+        let decoded_value = decode(encoded_value);
+
         println!("{}", format(&decoded_value));
     } else {
         println!("unknown command: {}", args[1])
