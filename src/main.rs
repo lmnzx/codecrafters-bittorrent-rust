@@ -3,8 +3,8 @@ use std::env;
 
 fn format(v: &Value) -> String {
     return match v {
-        Value::Bytes(b) => format!("{}", String::from_utf8(b.clone()).unwrap()),
-        Value::Int(i) => format!("{}", i.to_string()),
+        Value::Bytes(b) => String::from_utf8(b.clone()).unwrap(),
+        Value::Int(i) => i.to_string(),
         Value::List(l) => format!(
             "[{}]",
             l.iter()
@@ -23,7 +23,7 @@ fn main() {
     if command == "decode" {
         let encoded_value = &args[2];
         let decoded_value = from_str::<Value>(encoded_value).unwrap();
-        println!("{}", format(&decoded_value));
+        println!("{}", serde_json::Value::String(format(&decoded_value)));
     } else {
         println!("unknown command: {}", args[1])
     }
