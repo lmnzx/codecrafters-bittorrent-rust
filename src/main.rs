@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_bencode::{from_bytes, from_str, value::Value};
 use serde_bytes::ByteBuf;
+use sha1::{Digest, Sha1};
 use std::env;
 use std::io::Read;
 
@@ -58,9 +59,10 @@ fn main() {
         let mut buffer = Vec::new();
         file.read_to_end(&mut buffer).unwrap();
         let decoded: MetaInfo = from_bytes(&buffer).unwrap();
+        let hash = Sha1::digest(&buffer);
         println!(
-            "Tracker URL: {}\nLength: {}",
-            decoded.announce, decoded.info.length
+            "Tracker URL: {}\nLength: {}\nInfo Hash: {:x}",
+            decoded.announce, decoded.info.length, hash
         );
     } else {
         println!("unknown command: {}", args[1])
