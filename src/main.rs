@@ -4,7 +4,7 @@ use serde_bytes::ByteBuf;
 use sha1::{Digest, Sha1};
 use std::env;
 use std::fmt::Display;
-use std::io::Read;
+use std::io::{Read, Write};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Info {
@@ -33,6 +33,10 @@ impl<'a> std::fmt::LowerHex for HexSlice<'a> {
         }
         Ok(())
     }
+}
+
+pub fn vec_to_hex(bytes: &[u8]) -> String {
+    bytes.iter().map(|byte| format!("{:02x}", byte)).collect()
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -153,6 +157,36 @@ fn main() {
         let response = reqwest::blocking::get(&url).unwrap().bytes().unwrap();
         let decoded: TrackerResponse = from_bytes(&response).unwrap();
         println!("{}", decoded);
+    } else if command == "handshake" {
+        let mut file = std::fs::File::open(&args[2]).unwrap();
+        let mut buffer = Vec::new();
+        file.read_to_end(&mut buffer).unwrap();
+        let decoded: MetaInfo = from_bytes(&buffer).unwrap();
+
+        let hash = Sha1::digest(to_bytes(&decoded.info).unwrap());
+
+        let peer_id = "00112233445566778899";
+
+        let ip = &args[3];
+
+        // length of protocol string
+        let mut message: Vec<u8> = vec![19];
+        // protocol string
+        message.extend(b"BitTorrent protocol");
+        // reserved bytes
+        message.extend(vec![0; 8]);
+        // sha1 infohash (20 bytes)
+        message.extend(hash);
+        // peer id (20 bytes)
+        message.extend(peer_id.as_bytes());
+
+        let mut stream = std::net::TcpStream::connect(ip).unwrap();
+
+        let _ = stream.write(&message);
+        let mut response = vec![0; message.len()];
+        let _ = stream.read(&mut response);
+        let response_peer_id = &response[response.len() - 20..];
+        println!("Peer ID: {}", vec_to_hex(response_peer_id));
     } else {
         println!("unknown command: {}", args[1])
     }
