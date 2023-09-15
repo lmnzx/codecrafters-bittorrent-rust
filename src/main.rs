@@ -60,9 +60,16 @@ fn main() {
         let decoded: MetaInfo = from_bytes(&buffer).unwrap();
         let hash = Sha1::digest(to_bytes(&decoded.info).unwrap());
         println!(
-            "Tracker URL: {}\nLength: {}\nInfo Hash: {:x}",
-            decoded.announce, decoded.info.length, hash
+            "Tracker URL: {}\nLength: {}\nInfo Hash: {:x}\nPiece Length: {}",
+            decoded.announce, decoded.info.length, hash, decoded.info.piece_length
         );
+        println!("Piece Hashes:");
+        for i in 0..decoded.info.pieces.len() / 20 {
+            println!(
+                "{:x}",
+                Sha1::digest(&decoded.info.pieces[i * 20..(i + 1) * 20])
+            );
+        }
     } else {
         println!("unknown command: {}", args[1])
     }
