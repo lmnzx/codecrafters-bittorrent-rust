@@ -1,66 +1,26 @@
-use serde::Deserialize;
-use serde_bencode::{self, de, value::Value};
+use serde::{Deserialize, Serialize};
+use serde_bencode::{from_bytes, from_str, value::Value};
 use serde_bytes::ByteBuf;
 use std::env;
+use std::io::Read;
 
-#[derive(Debug, Deserialize)]
-struct Node(String, i64);
-
-#[derive(Debug, Deserialize)]
-struct File {
-    path: Vec<String>,
-    length: i64,
-    #[serde(default)]
-    md5sum: Option<String>,
-}
-
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Info {
+    length: u64,
     name: String,
-    pieces: ByteBuf,
     #[serde(rename = "piece length")]
-    piece_length: i64,
-    #[serde(default)]
-    md5sum: Option<String>,
-    #[serde(default)]
-    length: Option<i64>,
-    #[serde(default)]
-    files: Option<Vec<File>>,
-    #[serde(default)]
-    private: Option<u8>,
-    #[serde(default)]
-    path: Option<Vec<String>>,
-    #[serde(default)]
-    #[serde(rename = "root hash")]
-    root_hash: Option<String>,
+    piece_length: u64,
+    pieces: ByteBuf,
 }
 
-#[derive(Debug, Deserialize)]
-struct Torrent {
+#[derive(Debug, Serialize, Deserialize)]
+struct MetaInfo {
     info: Info,
-    #[serde(default)]
-    announce: Option<String>,
-    #[serde(default)]
-    nodes: Option<Vec<Node>>,
-    #[serde(default)]
-    encoding: Option<String>,
-    #[serde(default)]
-    httpseeds: Option<Vec<String>>,
-    #[serde(default)]
-    #[serde(rename = "announce-list")]
-    announce_list: Option<Vec<Vec<String>>>,
-    #[serde(default)]
-    #[serde(rename = "creation date")]
-    creation_date: Option<i64>,
-    #[serde(rename = "comment")]
-    comment: Option<String>,
-    #[serde(default)]
-    #[serde(rename = "created by")]
-    created_by: Option<String>,
+    announce: String,
 }
 
 fn decode(encoded_value: &str) -> Value {
-    return serde_bencode::from_str::<Value>(encoded_value).unwrap();
+    return from_str::<Value>(encoded_value).unwrap();
 }
 
 fn format(value: &Value) -> String {
@@ -93,9 +53,15 @@ fn main() {
 
         println!("{}", format(&decoded_value));
     } else if command == "info" {
-        let torrent_file = std::fs::read(&args[2]).unwrap();
-        let decoded_value = de::from_bytes::<Torrent>(&torrent_file).unwrap();
-        println!("Length: {}", decoded_value.info.length.unwrap_or_default());
+        // println!("{}", args[2]);
+        let mut file = std::fs::File::open(&args[2]).unwrap();
+        let mut buffer = Vec::new();
+        file.read_to_end(&mut buffer).unwrap();
+        let decoded: MetaInfo = from_bytes(&buffer).unwrap();
+        println!(
+            "Tracker URL: {}\nLength: {}",
+            decoded.announce, decoded.info.length
+        );
     } else {
         println!("unknown command: {}", args[1])
     }
