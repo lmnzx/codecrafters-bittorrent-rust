@@ -283,7 +283,7 @@ struct Info {
 impl Info {
     fn info_hash(self) -> String {
         let hash = Sha1::digest(serde_bencode::to_bytes(&self).unwrap());
-        hash.iter().map(|b| format!("{:02x}", b)).collect()
+        hash.iter().map(|b| format!("{:x}", b)).collect()
     }
 }
 
