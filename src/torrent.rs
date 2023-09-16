@@ -35,4 +35,19 @@ impl Info {
             })
             .collect()
     }
+
+    pub fn url_encoded_hash(&self) -> String {
+        self.info_hash()
+            .chars()
+            .collect::<Vec<char>>()
+            .chunks(2)
+            .fold(String::new(), |acc, chuck| {
+                let s = chuck.iter().collect::<String>();
+                let c = u8::from_str_radix(&s, 16).unwrap();
+                match c {
+                    5 | 46 | 48..=57 | 65..=90 | 95 | 97..=122 => acc + &char::from(c).to_string(),
+                    _ => acc + "%" + &s,
+                }
+            })
+    }
 }
