@@ -5,7 +5,7 @@ use sha1::{Digest, Sha1};
 pub struct Torrent {
     pub announce: String,
     #[serde(rename = "created by")]
-    pub created_by: String,
+    pub created_by: Option<String>,
     pub info: Info,
 }
 #[derive(Debug, Serialize, Deserialize)]
