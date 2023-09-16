@@ -259,7 +259,7 @@
 // }
 use clap::{Parser, Subcommand};
 use serde::{Deserialize, Serialize};
-use serde_bencode::value::Value as BencodeValue;
+use serde_bencode::{to_bytes, value::Value as BencodeValue};
 use serde_json::Value as JsonValue;
 use sha1::{Digest, Sha1};
 
@@ -283,7 +283,7 @@ struct Info {
 impl Info {
     fn info_hash(self) -> String {
         let hash = Sha1::digest(serde_bencode::to_bytes(&self).unwrap());
-        hash.iter().map(|b| format!("{:x}", b)).collect()
+        hash.iter().map(|b| format!("{:02x}", b)).collect()
     }
 }
 
@@ -342,7 +342,7 @@ fn main() {
             let torrent: Torrent = serde_json::from_value(torrent).unwrap();
             println!("Tracker URL: {}", torrent.announce);
             println!("Tracker URL: {}", torrent.info.length);
-            println!("Tracker URL: {}", torrent.info.info_hash());
+            println!("Info Hash: {}", torrent.info.info_hash());
         }
     }
 }
