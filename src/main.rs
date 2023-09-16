@@ -363,8 +363,8 @@ fn main() {
             let torrent: Torrent = serde_json::from_value(torrent).unwrap();
             println!("Tracker URL: {}", torrent.announce);
             println!("Length: {}", torrent.info.length);
-            println!("Piece Length: {}", torrent.info.info_hash());
-            println!("Info Hash: {}", torrent.info.piece_length);
+            println!("Info Hash: {}", torrent.info.info_hash());
+            println!("Piece Length: {}", torrent.info.piece_length);
             println!("Piece Hashes:\n{}", torrent.info.piece_hashes().join("\n"));
         }
     }
