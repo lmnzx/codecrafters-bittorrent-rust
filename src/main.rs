@@ -259,7 +259,7 @@
 // }
 use clap::{Parser, Subcommand};
 use serde::{Deserialize, Serialize};
-use serde_bencode::{to_bytes, value::Value as BencodeValue};
+use serde_bencode::value::Value as BencodeValue;
 use serde_json::Value as JsonValue;
 use sha1::{Digest, Sha1};
 
@@ -280,10 +280,31 @@ struct Info {
     pieces: Vec<u8>,
 }
 
+struct HexSlice<'a>(&'a [u8]);
+
+impl<'a> std::fmt::LowerHex for HexSlice<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if f.alternate() {
+            write!(f, "0x")?;
+        }
+        for &byte in self.0 {
+            write!(f, "{:02x}", byte)?;
+        }
+        Ok(())
+    }
+}
+
 impl Info {
-    fn info_hash(self) -> String {
+    fn info_hash(&self) -> String {
         let hash = Sha1::digest(serde_bencode::to_bytes(&self).unwrap());
         hash.iter().map(|b| format!("{:02x}", b)).collect()
+    }
+
+    fn piece_hashes(&self) -> Vec<String> {
+        self.pieces
+            .chunks(20)
+            .map(|chunk| format!("{:x}", HexSlice(chunk)))
+            .collect()
     }
 }
 
@@ -342,7 +363,9 @@ fn main() {
             let torrent: Torrent = serde_json::from_value(torrent).unwrap();
             println!("Tracker URL: {}", torrent.announce);
             println!("Tracker URL: {}", torrent.info.length);
-            println!("Info Hash: {}", torrent.info.info_hash());
+            println!("Piece Length: {}", torrent.info.info_hash());
+            println!("Info Hash: {}", torrent.info.piece_length);
+            println!("Piece Hashes:\n{}", torrent.info.piece_hashes().join("\n"));
         }
     }
 }
